@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"golang.org/x/net/http2"
 )
 
 type HealthCheckError struct {
@@ -72,9 +74,12 @@ func (h *HealthCheck) PortHealthCheck(ip string) error {
 
 func (h *HealthCheck) HTTPHealthCheck(ip string) error {
 	addr := fmt.Sprintf("http://%s:%s%s", ip, h.port, h.uri)
-	client := http.Client{
-		Timeout: h.timeout,
+	transport := &http.Transport{}
+	http2.ConfigureTransport(transport)
+	client := &http.Client{
+		Transport: transport,
 	}
+
 	now := time.Now()
 	req, err := http.NewRequest("GET", addr, nil)
 	if err != nil {
