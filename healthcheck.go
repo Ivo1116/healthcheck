@@ -3,6 +3,7 @@ package healthcheck
 import (
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -116,6 +117,12 @@ func (h *HealthCheck) HTTPHealthCheck(ip string) error {
 			dur.Nanoseconds()/time.Millisecond.Nanoseconds(),
 		)
 		return HealthCheckError{Code: 6, Message: errMsg}
+	}
+
+	if resp.ProtoMajor == 2 {
+		log.Println("Using HTTP/2")
+	} else {
+		log.Println("Using HTTP/1.1")
 	}
 
 	if err, ok := err.(net.Error); ok && err.Timeout() {
